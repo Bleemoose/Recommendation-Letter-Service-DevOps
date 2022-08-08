@@ -24,7 +24,7 @@ create table users
     password varchar(256) not null,
     FName    varchar(45)  not null,
     LName    varchar(45)  not null,
-    acc_type tinyint(1)   not null,
+    acc_type varchar (45)   not null,
     phone_no varchar(45)  not null
 );
 ```

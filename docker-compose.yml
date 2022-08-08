@@ -1,0 +1,27 @@
+version: "3"
+services:
+  application:
+    image: application-image
+    ports:
+      - "8080:8080"
+    networks:
+      - devops-network
+    depends_on:
+      - mysqldb
+
+  mysqldb:
+    image: mysql:8
+    networks:
+      - devops-network
+    environment:
+      MYSQL_ROOT_PASSWORD: stefanos
+      MYSQL_DATABASE: ds_2021
+      MYSQL_USER: springuser
+      MYSQL_PASSWORD: thePassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - "./.mysql-data/db:/var/lib/mysql"
+
+networks:
+  devops-network:
