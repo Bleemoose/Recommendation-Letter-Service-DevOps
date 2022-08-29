@@ -1,0 +1,54 @@
+---
+- hosts: virtualmachines
+  become: true
+  
+  tasks:
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+          - git
+          - maven
+          - openjdk-11-jdk
+          - docker-compose
+        state: latest
+        update_cache: true
+    - name: Download Application
+      git:
+        repo: 'https://github.com/Bleemoose/Recommendation-Letter-Service-DevOps.git'
+        dest: /srv/checkout
+        force: yes
+    - name: Copy properties file
+      become: true 
+      copy:
+        src: ./application.properties
+        dest: /srv/checkout
+    - name: Copy properties file again
+      become: true 
+      copy:
+        src: ./application.properties
+        dest: /srv/checkout/src/main/resources/
+    - name: Compile Application
+      shell: "mvn package -DskipTests"
+      args:
+        chdir: /srv/checkout/
+    - name: Create docker image
+      shell: "docker build -f dockerfile -t application-image ."
+      args:
+        chdir: /srv/checkout/
+    - name: Run docker compose
+      shell: "docker-compose up -d"
+      args:
+        chdir: /srv/checkout/

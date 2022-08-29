@@ -1,0 +1,56 @@
+---
+- hosts: virtualmachines
+  become: true
+  vars:   
+    mysql_root_password: stefanos  
+    mysql_database: ds_2021
+
+  tasks:
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Install required system packages
+      apt:
+        pkg:
+          - mysql-server
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - virtualenv
+          - git
+          - maven
+          - openjdk-11-jdk
+        state: latest
+        update_cache: true
+    - name: Download Application
+      git:
+        repo: 'https://github.com/Bleemoose/Recommendation-Letter-Service-DevOps.git'
+        dest: /srv/checkout
+        force: yes
+    - name: Copy properties file
+      become: true 
+      copy:
+        src: ./application.properties
+        dest: /srv/checkout
+    - name: Copy properties file again
+      become: true 
+      copy:
+        src: ./application.properties
+        dest: /srv/checkout/src/main/resources/
+    - name: Compile Application
+      shell: "mvn package -DskipTests"
+      args:
+        chdir: /srv/checkout/
+    - name: Download MySQL Cookbook
+      become: true 
+      copy:
+        src: ./mysql-init-password
+        dest: /var/lib/mysql/
+        force: yes
+    - name: test
+      shell: "chown mysql:mysql /var/lib/mysql/mysql-init-password"
+
