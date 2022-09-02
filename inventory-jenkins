@@ -1,0 +1,5 @@
+[virtualmachines]
+127.0.0.1
+
+[virtualmachines:vars]
+ansible_connection=local
