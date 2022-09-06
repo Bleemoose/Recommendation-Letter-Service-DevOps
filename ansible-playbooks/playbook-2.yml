@@ -1,0 +1,64 @@
+---
+- hosts: virtualmachines
+  become: true
+  
+  tasks:
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+          - git
+          - maven
+          - openjdk-11-jdk
+          - docker-compose
+          - screen
+        state: latest
+        update_cache: true
+    - name: Download Application
+      git:
+        repo: 'https://github.com/Bleemoose/Recommendation-Letter-Service-DevOps.git'
+        dest: /srv/checkout
+        force: yes
+    - name: Copy properties file
+      become: true 
+      copy:
+        src: ./application.properties
+        dest: /srv/checkout
+    - name: Copy properties file again
+      become: true 
+      copy:
+        src: ./application.properties
+        dest: /srv/checkout/src/main/resources/
+    - name: Compile Application
+      shell: "mvn package -DskipTests"
+      args:
+        chdir: /srv/checkout/
+    - name: Run MySQL Docker 
+      shell: 'docker run --name mysqldb -p 3306:3306 -v mysqldbvol -e MYSQL_USER=stefanos -e MYSQL_PASSWORD=123 -e MYSQL_ROOT_PASSWORD=stefanos -e MYSQL_DATABASE=ds_2021 -d mysql'
+    - name: "MySQL - Check mysql - if it responds"
+      mysql_info:
+        login_user: root
+        login_password: "stefanos"
+        filter:
+          - version
+      register: mysql_result
+      until: mysql_result is not failed
+      retries: 5
+      delay: 10
+    - name: Run Application 
+      shell: 'screen -d -m java -jar ds_group_13-0.0.1-SNAPSHOT.jar'
+      args:
+        chdir: /srv/checkout/target
+
