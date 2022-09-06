@@ -5,3 +5,4 @@ Make sure you create an `inventory.yaml` file that contains all the machines you
 Then make sure you edit this `application.properties` (in this folder) with the information/settings you want for the application
 
 Then you can ran `playbook.yml` to deploy the application using dockers and `playbook-2.yml` to deploy the application natively
+(note that in playbook-2 you can change the password of the database in the playbook variables)
