@@ -26,6 +26,8 @@
           - openjdk-11-jdk
           - docker-compose
           - screen
+          - python3-mysqldb
+          - mysql-client
         state: latest
         update_cache: true
     - name: Download Application
@@ -51,13 +53,14 @@
       shell: 'docker run --name mysqldb -p 3306:3306 -v mysqldbvol -e MYSQL_PASSWORD=123 -e MYSQL_ROOT_PASSWORD={{ mysql_root_password }} -e MYSQL_DATABASE=ds_2021 -d mysql'
     - name: Check if MySQL is up
       mysql_info:
+        login_host: 127.0.0.1
         login_user: root
         login_password: "{{mysql_root_password}}"
         filter:
           - version
       register: mysql_result
       until: mysql_result is not failed
-      retries: 5
+      retries: 10
       delay: 10
     - name: Run Application 
       shell: 'screen -d -m java -jar ds_group_13-0.0.1-SNAPSHOT.jar'
